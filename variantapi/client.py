@@ -1,18 +1,14 @@
 import logging
-
 import requests
-from requests.exceptions import HTTPError
-from requests.exceptions import Timeout
-from requests.exceptions import ConnectionError
-from requests.exceptions import RequestException
+
+__author__ = 'saphetor, Leopold von Seckendorff'
 
 _debug = False
 logging.basicConfig(
     level=logging.DEBUG if _debug else logging.INFO
     )
 
-
-class VariantApiException(Exception):
+class VarsomeHTTPError(Exception):
     ERROR_CODES = {
         400: "Bad request. A parameter you have passed is not valid, "
              "or something in your request is wrong",
@@ -32,20 +28,8 @@ class VariantApiException(Exception):
         504: "Gateway Timeout",
     }
 
-    def __init__(self, status, response=None):
-        self.status = status
-        self.response = response
-
-    def __str__(self):
-        return "{} ({})".format(
-            self.status,
-            self.ERROR_CODES.get(self.status, 'Unknown error.')
-                if self.response is None else self.response
-            )
-
-    def __repr__(self):
-        return "{}(status={})".format(self.__class__.__name__, self.status)
-
+    def __init__(self, status):
+        super().__init__('{} ({})'.format(status, self.ERROR_CODES[status]))
 
 class VariantAPIClientBase(object):
     if _debug:
@@ -66,40 +50,27 @@ class VariantAPIClientBase(object):
 
     def _make_request(self, path, method='GET', params=None, json_data=None):
         if method not in self._accepted_methods:
-            raise VariantApiException('', 'Unsupported method {}'.format(method))
+            raise TypeError('Unsupported method {}'.format(method))
 
-        try:
-            if method == 'GET':
-                r = self.session.get(self._api_url + path, params=params)
-            elif method == 'POST':
-                r = self.session.post(
-                    self._api_url + path,
-                    params=params,
-                    json=json_data,
-                    headers={'Content-Type': 'application/json'}
-                        if json_data is not None else None
-                    )
-                logging.debug(
-                    'Time between request and response {}'.format(r.elapsed)
-                    )
-                logging.debug('Content length {}'.format(len(r.content)))
+        if method == 'GET':
+            r = self.session.get(self._api_url + path, params=params)
+        elif method == 'POST':
+            r = self.session.post(
+                self._api_url + path,
+                params=params,
+                json=json_data,
+                headers={'Content-Type': 'application/json'}
+                    if json_data is not None else None
+                )
+            logging.debug(
+                'Time between request and response {}'.format(r.elapsed)
+                )
+            logging.debug('Content length {}'.format(len(r.content)))
 
-            if r.status_code in VariantApiException.ERROR_CODES:
-                raise VariantApiException(
-                    r.status_code,
-                    r.json()['detail']
-                        if r.headers['Content-Type'] == 'application/json'
-                        else None
-                    )
-            return r
-        except HTTPError as e:
-            raise VariantApiException('', 'Unknown http error {}'.format(e))
-        except Timeout as e:
-            raise VariantApiException('', 'Request timed out {}'.format(e))
-        except ConnectionError as e:
-            raise VariantApiException('', 'Connection failure or connection refused {}'.format(e))
-        except RequestException as e:
-            raise VariantApiException('', 'Unknown error {}'.format(e.response))
+        if r.status_code in VarsomeHTTPError.ERROR_CODES:
+            raise VarsomeHTTPError(r.status_code)
+
+        return r
 
     def get(self, path, params=None):
         response = self._make_request(path, 'GET', params=params)
