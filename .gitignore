@@ -106,3 +106,5 @@ ENV/
 #jetbrains ide
 
 .idea
+
+.DS_Store

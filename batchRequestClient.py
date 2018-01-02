@@ -15,14 +15,11 @@
 
 import argparse
 import json
-import logging
-import re
 import sys
-import operator
 from sys import argv
 from variantapi.client import VariantAPIClient
 
-__author__ = 'stephanos-androutsellis'
+__author__ = 'stephanos-androutsellis, Leopold von Seckendorff'
 
 def main(argv):
     infile = ''
@@ -31,39 +28,45 @@ def main(argv):
     parser = argparse.ArgumentParser(
         description='Simple batch lookup Client application. '
         )
-    parser.add_argument('-i',
+    parser.add_argument(
+        '-i',
         help='Input file',
         type=str,
         metavar='Input File',
         required=True
         )
-    parser.add_argument('-o',
+    parser.add_argument(
+        '-o',
         help='Output file',
         type=str,
         metavar='Output File',
         required=True
         )
-    parser.add_argument('-n',
-        help="Number of variants per GET request",
+    parser.add_argument(
+        '-n',
+        help='Number of variants per GET request',
         type=int,
         metavar='Batch size',
         required=False,
         default=10000
         )
-    parser.add_argument('-k',
+    parser.add_argument(
+        '-k',
         help='Your key to the API',
         type=str,
         metavar='API Key',
         required=False
         )
-    parser.add_argument('-g',
+    parser.add_argument(
+        '-g',
         help='Reference genome either hg19 (default) or hg38',
         type=str,
         metavar='Reference Genome',
         required=False,
         default='hg19'
         )
-    parser.add_argument('-p',
+    parser.add_argument(
+        '-p',
         help='Request parameters '
             'e.g. add-all-data=1 expand-pubmed-articles=0',
         type=str,
@@ -81,31 +84,31 @@ def main(argv):
     request_parameters = None
     if args.p:
         request_parameters = {param[0]: param[1] for param in [
-            param.split("=") for param in args.p
+            param.split('=') for param in args.p
             ]
         }
 
     # Open and load input file into list
-    print("Reading input file ", infile)
+    print('Reading input file ', infile)
     with open(infile) as fi:
         variants = fi.readlines()
     variants = [v.strip('\n') for v in variants]
 
     # Initialize client connection to API
-    api = VariantAPIClient(api_key, max_variants_per_batch=batch_size)
+    api = VariantAPIClient(api_key, batch_size=batch_size)
     if (api is None):
-        print("Failed to connect to API")
+        print('Failed to connect to API')
         sys.exit()
 
-    print("posting GET requests... ", end='')
+    print('posting GET requests... ', end='')
     results = api.batch_lookup(
         variants,
         params=request_parameters,
         ref_genome=ref_genome
         )
-    print("done")
+    print('done')
 
-    print("writing output file ", outfile)
+    print('writing output file ', outfile)
     with open (outfile, 'w') as fo:
         fo.write(json.dumps(results, indent=4))
 
