@@ -37,8 +37,6 @@ class VariantAPIClientBase(object):
     else:
         _api_url = 'https://api.varsome.com'
 
-    _accepted_methods = ('GET', 'POST')
-
     def __init__(self, api_key=None):
         self._headers = {'Accept': 'application/json'}
 
@@ -49,9 +47,6 @@ class VariantAPIClientBase(object):
         self.session.headers.update(self._headers)
 
     def _make_request(self, path, method='GET', params=None, json_data=None):
-        if method not in self._accepted_methods:
-            raise TypeError('Unsupported method {}'.format(method))
-
         if method == 'GET':
             r = self.session.get(self._api_url + path, params=params)
         elif method == 'POST':
