@@ -10,14 +10,14 @@ __author__ = 'ckopanos, Leopold von Seckendorff'
 def main(argv):
     parser = argparse.ArgumentParser(description='Sample Variant API calls')
     parser.add_argument(
-		'-k',
+        '-k',
         help='Your key to the API',
         type=str,
         metavar='API Key',
         required=False
         )
     parser.add_argument(
-		'-g',
+        '-g',
         help='Reference genome either hg19 or hg38',
         type=str,
         metavar='Reference Genome',
@@ -25,7 +25,7 @@ def main(argv):
         default='hg19'
         )
     parser.add_argument(
-		'-q',
+        '-q',
         help='Query to lookup in the API e.g. chr19:20082943:1:G '
             'or in case of batch request '
             'e.g. chr19:20082943:1:G rs113488022',
@@ -35,7 +35,7 @@ def main(argv):
         nargs='+'
         )
     parser.add_argument(
-		'-p',
+        '-p',
         help='Request parameters '
             'e.g. add-all-data=1 expand-pubmed-articles=0',
         type=str,

@@ -66,25 +66,25 @@ results = api.batch_lookup(
 
 ## Example Command Line Usage
 
-if you have installed the variantapi packagage into your environment using pip, you can use `run.py`, `batchRequestClient.py`, and `simpleVCFClient.py` from the command line to fetch data.
+if you have installed the variantapi packagage into your environment (either using pip or by moving the folder to the working directory), you can use `smallRequestClient.py`, `batchRequestClient.py`, and `simpleVCFClient.py` from the command line to fetch data.
 
 ### Single Variants or Small Batches
 
 ```bash
-./run.py -g hg19 -q 'chr19:20082943:1:G' -p add-all-data=1
+./smallRequestClient.py -g hg19 -q 'chr19:20082943:1:G' -p add-all-data=1
 ```
 
 You may pass more than one values after the -q argument that will make a batch request
 to the API but you will need a token to do that e.g.
 
 ```bash
-./run.py -k 'your token' -g hg19 -q 'rs113488022' 'chr19:20082943:1:G' -p add-source-databases=gnomad-exomes,gnomad-genomes
+./smallRequestClient.py -k 'your token' -g hg19 -q 'rs113488022' 'chr19:20082943:1:G' -p add-source-databases=gnomad-exomes,gnomad-genomes
 ```
 
 Run
 
 ```bash
-./run.py -h
+./smallRequestClient.py -h
 ```
 
 for a list of available options
