@@ -47,6 +47,7 @@ class VariantAPIClientBase(object):
         self.session.headers.update(self._headers)
 
     def _make_request(self, path, method='GET', params=None, json_data=None):
+        logging.debug('get request to', self._api_url + path)
         if method == 'GET':
             r = self.session.get(self._api_url + path, params=params)
         elif method == 'POST':
@@ -82,7 +83,7 @@ class VariantAPIClientBase(object):
 
 
 class VariantAPIClient(VariantAPIClientBase):
-    schema_lookup_path = '/lookup/schema/'
+    schema_lookup_path = '/lookup/schema'
     lookup_path = '/lookup/{}/{}'
     batch_lookup_path = '/lookup/batch/{}'
 

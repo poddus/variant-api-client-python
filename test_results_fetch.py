@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import json
 from variantapi.client import VariantAPIClient
 
@@ -8,7 +10,7 @@ varsome_api = VariantAPIClient(key)
 
 ### schema
 with open('./test_results/schema.json', 'w+') as f:
-    json.dump(varsome_api.schema())
+    json.dump(varsome_api.schema(), f)
 
 ### lookup
 lookup_results = './test_results/lookup/'

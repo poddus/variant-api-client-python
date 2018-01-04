@@ -19,13 +19,13 @@ class TestAPIOutput(unittest.TestCase):
         with self.assertRaises(VarsomeHTTPError):
             self.varsome_api_no_auth.batch_lookup(['BRAF:V600E'])
 
-    # def test_schema(self):
-    #     with open('./test_results/schema.json', 'r') as f:
-    #         results = json.loads(f.read())
-    #     self.assertEqual(
-    #         self.varsome_api.schema(),
-    #         results
-    #         )
+    def test_schema(self):
+        with open('./test_results/schema.json', 'r') as f:
+            results = json.loads(f.read())
+        self.assertEqual(
+            self.varsome_api.schema(),
+            results
+            )
 
     def test_lookup(self):
         lookup_results = './test_results/lookup/'
