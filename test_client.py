@@ -30,6 +30,14 @@ class TestAPIOutput(unittest.TestCase):
     def test_lookup(self):
         lookup_results = './test_results/lookup/'
 
+        with open(lookup_results + '0.json', 'r') as f:
+            result = json.load(f)
+            self.assertEqual(
+                self.varsome_api.lookup('10190091015942290001'),
+                result
+                )
+
+
         with open(lookup_results + '1.json', 'r') as f:
             result = json.load(f)
             self.assertEqual(

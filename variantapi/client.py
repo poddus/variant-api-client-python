@@ -84,8 +84,8 @@ class VariantAPIClientBase(object):
 
 class VariantAPIClient(VariantAPIClientBase):
     schema_lookup_path = '/lookup/schema'
-    lookup_path = '/lookup/{}/{}'
-    batch_lookup_path = '/lookup/batch/{}'
+    lookup_path = '/lookup/'
+    batch_lookup_path = '/lookup/batch/'
 
     def __init__(self, api_key=None, batch_size=10000):
         super(VariantAPIClient, self).__init__(api_key)
@@ -94,7 +94,7 @@ class VariantAPIClient(VariantAPIClientBase):
     def schema(self):
         return self.get(self.schema_lookup_path)
 
-    def lookup(self, query, params=None, ref_genome='hg19'):
+    def lookup(self, query, params=None, ref_genome=None):
         """
 
         :param query: variant representation
@@ -105,10 +105,12 @@ class VariantAPIClient(VariantAPIClientBase):
         :return:dictionary of annotations. refer to
             https://api.varsome.com/lookup/schema for dictionary properties
         """
-        return self.get(
-            self.lookup_path.format(query, ref_genome),
-            params=params
-            )
+        if ref_genome is not None:
+            full_path = self.lookup_path + query + '/' + ref_genome
+        else:
+            full_path = self.lookup_path + query
+
+        return self.get(full_path, params=params)
 
     def batch_lookup(self, variants, params=None, ref_genome='hg19'):
         """return list of query results for all variants.
@@ -127,11 +129,11 @@ class VariantAPIClient(VariantAPIClientBase):
         """
         n = self.batch_size
         chunks = [variants[i:i+n] for i in range(0, len(variants), n)]
-        
+
         results = []
         for chunk in chunks:
             data = self.post(
-                        self.batch_lookup_path.format(ref_genome),
+                        self.batch_lookup_path + '/' + ref_genome,
                         params=params,
                         json_data={'variants': chunk}
                         )
