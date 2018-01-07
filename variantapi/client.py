@@ -5,7 +5,7 @@ __author__ = 'saphetor, Leopold von Seckendorff'
 
 logging.basicConfig(
     format='%(levelname)s: %(message)s',
-    level=logging.DEBUG
+    level=logging.INFO
     )
 
 class VarsomeHTTPError(Exception):
@@ -109,7 +109,7 @@ class VariantAPIClient(VariantAPIClientBase):
 
         return self.get(full_path, params=params)
 
-    def batch_lookup(self, variants, params=None, ref_genome='hg19'):
+    def batch_lookup(self, variants, params=None, ref_genome=None):
         """return list of query results for all variants.
 
         split variants into chunks of size batch_size.
@@ -124,13 +124,18 @@ class VariantAPIClient(VariantAPIClientBase):
             refer to https://api.varsome.com/lookup/schema
             for dictionary properties
         """
+        if ref_genome is not None:
+            full_path = self.batch_lookup_path + ref_genome
+        else:
+            full_path = self.batch_lookup_path + 'hg19'
+
         n = self.batch_size
         chunks = [variants[i:i+n] for i in range(0, len(variants), n)]
 
         results = []
         for chunk in chunks:
             data = self.post(
-                        self.batch_lookup_path + '/' + ref_genome,
+                        full_path,
                         params=params,
                         json_data={'variants': chunk}
                         )

@@ -2,6 +2,7 @@
 import argparse
 import json
 import sys
+import os
 
 from variantapi.client import VariantAPIClient
 
@@ -13,14 +14,15 @@ def create_parser():
     parser = argparse.ArgumentParser(
         description='CLI Utility for Varsome API. You can either input '
             'variants directly using -q, or define an input CSV file '
-            'using -f. Results are returned to STDOUT. To save output '
-            'to file, use a pipe ( > output.json)')
+            'using -f (API Key required). Results are returned to STDOUT. '
+            'To save output to file, use a pipe ( > output.json)'
+            )
     parser.add_argument(
         '-k',
         # '--api_key',
-        help='Your key to the API',
+        help='path to your API key file',
         type=str,
-        metavar='API Key',
+        metavar='path',
         required=False
         )
     parser.add_argument(
@@ -45,34 +47,33 @@ def create_parser():
 
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument(
-        '-q',
+        '-s',
         # '--query',
-        help='Query to lookup in the API e.g. chr19:20082943:1:G '
-            'or in case of batch request '
-            'e.g. chr19:20082943:1:G rs113488022',
+        help='single variant to lookup in the API e.g. chr19:20082943:1:G. '
+            'for multiple variants use -f',
         type=str,
-        metavar='variants',
-        nargs='+'
+        metavar='variant'
         )
     group.add_argument(
         '-f',
         # '--input-file',
-        help='Path to csv file with variants. It should include '
-            'one variant per line.',
+        help='Path to file with variants with one variant per line.',
         type=str,
-        metavar='Input CSV File',
+        metavar='Input File',
         )
     
     return parser
 
-def main():
+def parse_the_args(args):
+    
+    if not args.k:
+        api_key = None
+    elif not os.path.exists(args.k):
+       raise FileNotFoundError('{} does not exist'.format(args.k))
+    else:
+        with open(args.k, 'r') as f:
+            api_key = f.read()
 
-    parser = create_parser()
-    parser.parse_args()
-
-    api_key = args.k
-    query = args.q
-    ref_genome = args.g
     if args.p:
         request_parameters = {
             param[0]: param[1] for param in [
@@ -82,25 +83,48 @@ def main():
     else:
         request_parameters = None
 
+    if not args.f:
+        file_input = None
+    elif not os.path.exists(args.f):
+        raise FileNotFoundError('{} does not exist'.format(args.f))
+    else:
+        with open(args.f, 'r') as f:
+            file_input = f.readlines()
+
+    return api_key, args.s, args.g, request_parameters, file_input
+
+def main():
+
+    parser = create_parser()
+    args = parser.parse_args()
+
+    (
+    api_key,
+    single,
+    ref_genome,
+    request_parameters,
+    file_input
+    ) = parse_the_args(args)
+
     api = VariantAPIClient(api_key)
 
-    if len(query) == 1:
+    if single:
         result = api.lookup(
-                    query[0],
+                    single,
                     params=request_parameters,
                     ref_genome=ref_genome
                     )
-    else:
+    elif file_input:
         if api_key is None:
-            sys.exit(
-                'You need to pass an api key to perform batch requests. '
-                'consider using batchRequestClient.py for large batch lookups'
+            raise SystemExit(
+                'You need to pass an api key to perform batch requests.'
                 )
         result = api.batch_lookup(
-                    query,
+                    file_input,
                     params=request_parameters,
                     ref_genome=ref_genome
                     )
+
 
     if result:
         print(json.dumps(result, indent=4, sort_keys=True))
