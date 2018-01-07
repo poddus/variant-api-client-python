@@ -1,11 +1,22 @@
 #!/usr/bin/env python3
 
 import unittest
+import logging
 import json
+
 from variantapi.client import VariantAPIClient
 from variantapi.client import VarsomeHTTPError
 
-class TestAPIOutput(unittest.TestCase):
+from run import create_parser
+
+__author__ = 'Leopold von Seckendorff'
+
+logging.basicConfig(
+    format='%(levelname)s: %(message)s',
+    level=logging.DEBUG
+    )
+
+class TestClient(unittest.TestCase):
 
     def setUp(self):
         with open('./varsome_api_key', 'r') as f:
@@ -15,11 +26,13 @@ class TestAPIOutput(unittest.TestCase):
         self.varsome_api = VariantAPIClient(self.key)
 
     def test_HTTP_error_handling(self):
+        logging.info('testing HTTP Error Handling...')
         # don't pass API key to raise 401 Error
         with self.assertRaises(VarsomeHTTPError):
             self.varsome_api_no_auth.batch_lookup(['BRAF:V600E'])
 
     def test_schema(self):
+        logging.info('testing lookup schema...')
         with open('./test_results/schema.json', 'r') as f:
             results = json.loads(f.read())
         self.assertEqual(
@@ -28,6 +41,7 @@ class TestAPIOutput(unittest.TestCase):
             )
 
     def test_lookup(self):
+        logging.info('testing lookups...')
         lookup_results = './test_results/lookup/'
 
         with open(lookup_results + '0.json', 'r') as f:
@@ -36,7 +50,6 @@ class TestAPIOutput(unittest.TestCase):
                 self.varsome_api.lookup('10190091015942290001'),
                 result
                 )
-
 
         with open(lookup_results + '1.json', 'r') as f:
             result = json.load(f)
@@ -64,6 +77,7 @@ class TestAPIOutput(unittest.TestCase):
                 )
 
     def test_batch_lookup(self):
+        logging.info('testing batch lookup...')
         batch_result = './test_results/batch_lookup.json'
         variants = [
             'CCR5:c.*1712delG',
@@ -81,6 +95,23 @@ class TestAPIOutput(unittest.TestCase):
     def tearDown(self):
         self.varsome_api.session.close()
         self.varsome_api_no_auth.session.close()
+
+
+class Test_CLI(unittest.TestCase):
+
+    def setUp(self):
+        self.parser = create_parser()
+
+    def test_parser_no_args(self):
+        with self.assertRaises(SystemExit):
+            self.parser.parse_args()
+
+    def test_parser_with_query(self):
+        raise NotImplementedError
+
+    def test_parser_with_file(self):
+        raise NotImplementedError
+         
 
 if __name__ == '__main__':
     unittest.main()

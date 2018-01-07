@@ -3,9 +3,9 @@ import requests
 
 __author__ = 'saphetor, Leopold von Seckendorff'
 
-_debug = False
 logging.basicConfig(
-    level=logging.DEBUG if _debug else logging.INFO
+    format='%(levelname)s: %(message)s',
+    level=logging.DEBUG
     )
 
 class VarsomeHTTPError(Exception):
@@ -32,10 +32,7 @@ class VarsomeHTTPError(Exception):
         super().__init__('{} ({})'.format(status, self.ERROR_CODES[status]))
 
 class VariantAPIClientBase(object):
-    if _debug:
-        _api_url = 'https://dev-api.varsome.com'
-    else:
-        _api_url = 'https://api.varsome.com'
+    _api_url = 'https://api.varsome.com'
 
     def __init__(self, api_key=None):
         self._headers = {'Accept': 'application/json'}
@@ -47,7 +44,7 @@ class VariantAPIClientBase(object):
         self.session.headers.update(self._headers)
 
     def _make_request(self, path, method='GET', params=None, json_data=None):
-        logging.debug('get request to', self._api_url + path)
+        logging.debug('get request to ' + self._api_url + path)
         if method == 'GET':
             r = self.session.get(self._api_url + path, params=params)
         elif method == 'POST':
@@ -59,7 +56,7 @@ class VariantAPIClientBase(object):
                     if json_data is not None else None
                 )
             logging.debug(
-                'Time between request and response {}'.format(r.elapsed)
+                'response time {}'.format(r.elapsed)
                 )
             logging.debug('Content length {}'.format(len(r.content)))
 

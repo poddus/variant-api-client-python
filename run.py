@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import argparse
 import json
 import sys
@@ -7,10 +7,17 @@ from variantapi.client import VariantAPIClient
 
 __author__ = 'ckopanos, Leopold von Seckendorff'
 
-def main(argv):
-    parser = argparse.ArgumentParser(description='Sample Variant API calls')
+def create_parser():
+    """arguments are parsed in separate function for testing"""
+
+    parser = argparse.ArgumentParser(
+        description='CLI Utility for Varsome API. You can either input '
+            'variants directly using -q, or define an input CSV file '
+            'using -f. Results are returned to STDOUT. To save output '
+            'to file, use a pipe ( > output.json)')
     parser.add_argument(
         '-k',
+        # '--api_key',
         help='Your key to the API',
         type=str,
         metavar='API Key',
@@ -18,44 +25,65 @@ def main(argv):
         )
     parser.add_argument(
         '-g',
+        # '--ref_genome',
         help='Reference genome either hg19 or hg38',
         type=str,
         metavar='Reference Genome',
         required=False,
-        default='hg19'
+        default=None
         )
     parser.add_argument(
+        '-p',
+        # '--parameters',
+        help='Request parameters '
+            'e.g. add-all-data=1 expand-pubmed-articles=0',
+        type=str,
+        metavar='params',
+        required=False,
+        nargs='+'
+        )
+
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument(
         '-q',
+        # '--query',
         help='Query to lookup in the API e.g. chr19:20082943:1:G '
             'or in case of batch request '
             'e.g. chr19:20082943:1:G rs113488022',
         type=str,
-        metavar='Query',
-        required=True,
+        metavar='variants',
         nargs='+'
         )
-    parser.add_argument(
-        '-p',
-        help='Request parameters '
-            'e.g. add-all-data=1 expand-pubmed-articles=0',
+    group.add_argument(
+        '-f',
+        # '--input-file',
+        help='Path to csv file with variants. It should include '
+            'one variant per line.',
         type=str,
-        metavar='Request Params',
-        required=False,
-        nargs='+'
+        metavar='Input CSV File',
         )
-    args = parser.parse_args()
+    
+    return parser
+
+def main():
+
+    parser = create_parser()
+    parser.parse_args()
+
     api_key = args.k
     query = args.q
     ref_genome = args.g
-    request_parameters = None
     if args.p:
-        request_parameters = {param[0]: param[1] for param in [
-            param.split('=') for param in args.p
-            ]
-        }
+        request_parameters = {
+            param[0]: param[1] for param in [
+                param.split('=') for param in args.p
+                ]
+            }
+    else:
+        request_parameters = None
 
     api = VariantAPIClient(api_key)
-    
+
     if len(query) == 1:
         result = api.lookup(
                     query[0],
@@ -73,11 +101,11 @@ def main(argv):
                     params=request_parameters,
                     ref_genome=ref_genome
                     )
-    
+
     if result:
         print(json.dumps(result, indent=4, sort_keys=True))
     else:
         print('No result')
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
