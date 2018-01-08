@@ -72,7 +72,7 @@ def parse_the_args(args):
        raise FileNotFoundError('{} does not exist'.format(args.k))
     else:
         with open(args.k, 'r') as f:
-            api_key = f.read()
+            api_key = f.readline().rstrip('\n')
 
     if args.p:
         request_parameters = {

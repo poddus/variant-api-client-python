@@ -21,7 +21,7 @@ class TestClient(unittest.TestCase):
 
     def setUp(self):
         with open('./varsome_api_key', 'r') as f:
-            self.key = f.read()
+            self.key = f.readline().rstrip('\n')
 
         self.varsome_api_no_auth = VariantAPIClient()
         self.varsome_api = VariantAPIClient(self.key)
@@ -129,7 +129,7 @@ class Test_CLI(unittest.TestCase):
     def test_parser_authenticated_batch(self):
         logging.info('testing parser with key and batch file...')
         with open('./varsome_api_key', 'r') as f:
-            api_key = f.read()
+            api_key = f.readline().rstrip('\n')
 
         variants_file = './test_files/batch_sample.txt'
         with open(variants_file, 'r') as f:
